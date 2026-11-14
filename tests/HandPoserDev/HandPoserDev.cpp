@@ -208,6 +208,14 @@ static void Step() {
                 } while (FindNextFileA(h, &fd));
                 FindClose(h);
             }
+            if (GetFileAttributesA((s_shotDir + "\\jolt.flag").c_str()) != INVALID_FILE_ATTRIBUTES) {  // the grip moved under the hand,
+                DeleteFileA((s_shotDir + "\\jolt.flag").c_str());                                       // as the game might
+                Object sock = s_mag.GetObj("HandSocket");
+                Vec l = sock.Get<Vec>("RelativeLocation");
+                Params m(sock, "K2_SetRelativeLocation");
+                m.Set("NewLocation", Vec{l.x + 2, l.y, l.z}).Set("bSweep", false).Set("bTeleport", true).Call();
+                Log("HPDEV jolt: the held magazine's grip moved 2 cm");
+            }
             if (GetFileAttributesA((s_shotDir + "\\drop.flag").c_str()) != INVALID_FILE_ATTRIBUTES) {  // the hand lets go, as
                 DeleteFileA((s_shotDir + "\\drop.flag").c_str());                                       // opening Virtual Desktop's desktop does
                 Params d(s_ctrl, "DropObjectByInterface");

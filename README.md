@@ -32,6 +32,12 @@ The magazine's class, plus `@mod` when another plugin has re-dressed it. The Sai
 `Magazine_AK_6L23_C`. The editor starts from whatever grip the magazine has, including the fits those plugins make,
 and a saved pose replaces it.
 
+Saved poses go onto every magazine of their kind, checked twice a second, but never onto one in your hand: putting a
+pose on a held magazine means letting go of it and taking it again, and a hand that moves meanwhile misses it and
+the magazine falls. A magazine in your hand gets your pose when you let go of it. Only a change you make on the page
+lets go and re-takes the magazine you're holding. (0.1.0 did it for saved poses too, and Barrett magazines fell out
+of the hand.)
+
 One pose serves both hands. The game mirrors a magazine's grip for the other hand, so a pose made with your left hand
 fits your right the mirror way.
 

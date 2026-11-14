@@ -31,7 +31,7 @@
 
 using namespace gml;
 
-GML_PLUGIN("com.remarrow.handposer", "Hand Poser", "0.1.0");
+GML_PLUGIN("com.remarrow.handposer", "Hand Poser", "0.1.1");
 
 struct Vec3 { double x, y, z; };
 struct Rot3 { double pitch, yaw, roll; };
@@ -275,6 +275,7 @@ static void StoreIndex() {
 
 static void Regrip(Edit& e) {
     if (e.regrip == 2) return;  // already let go: it is taken again with the latest values
+    if (e.regrip == 0 && e.held && API->IsValid(e.item)) Log("letting go of {} and taking it again, for your change", Object(e.item).Name());
     e.regrip = 1;
     e.due = GetTickCount64() + 150;
 }
@@ -301,15 +302,24 @@ static void ApplySaved() {
             if (!API->IsValid(item.ptr) || KeyOf(item) != key) continue;
             Object sock = item.GetObj("HandSocket");
             if (!sock) continue;
-            bool editing = false;
-            for (auto& e : s_edit)
+            bool editing = false, held = false;
+            for (auto& e : s_edit) {
                 if (e.item == item.ptr && e.dirty) editing = true;
+                if (e.item == item.ptr && e.held) held = true;
+            }
             if (editing) continue;  // your unsaved changes on the one in your hand stay
+            // Never in your hand: putting a pose on a held magazine means letting go and taking it again, and a hand that
+            // moved meanwhile misses it and the magazine falls (it did, with the Barrett's). It gets your pose once you let go.
+            if (held) continue;
             Original(sock, key);
-            if (Same(ReadPose(sock), pose)) continue;
+            Pose now = ReadPose(sock);
+            if (Same(now, pose)) continue;
+            static int logged = 0;
+            if (logged < 40) {
+                logged++;
+                Log("your pose onto {} (it had {})", item.Name(), Encode(now).substr(0, 120));
+            }
             WritePose(sock, pose);
-            for (auto& e : s_edit)
-                if (e.item == item.ptr) Regrip(e);
         }
     }
 }
